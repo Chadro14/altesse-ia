@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title> ALTESSE IA</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg: #fff;
+      --container-bg: #f8f8f8;
+      --message-bg: #fff;
+      --user-msg-bg: #e0e0e0;
+      --bot-msg-bg: #f0f0f0;
+      --text-color: #000;
+      --accent-color: #555;
+      --border-color: #ccc;
+    }
+
+    body {
+      margin: 0;
+      background: var(--main-bg);
+      color: var(--text-color);
+      font-family: 'Roboto Mono', monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 500px;
+      height: 95vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--container-bg);
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--message-bg);
+      border-bottom: 1px solid var(--border-color);
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent-color) var(--border-color);
+    }
+
+    .messages::-webkit-scrollbar {
+      width: 8px;
+    }
+    .messages::-webkit-scrollbar-track {
+      background: var(--border-color);
+    }
+    .messages::-webkit-scrollbar-thumb {
+      background-color: var(--accent-color);
+      border-radius: 20px;
+      border: 2px solid var(--border-color);
+    }
+
+    .msg {
+      padding: 12px 18px;
+      border-radius: 20px;
+      max-width: 75%;
+      word-wrap: break-word;
+      font-size: 15px;
+      line-height: 1.5;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .user {
+      align-self: flex-end;
+      background: var(--user-msg-bg);
+      border-bottom-right-radius: 5px;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: var(--bot-msg-bg);
+      border-bottom-left-radius: 5px;
+    }
+
+    .input-area {
+      display: flex;
+      border-top: 1px solid var(--border-color);
+      padding: 10px;
+      gap: 10px;
+      background: var(--container-bg);
+    }
+
+    input {
+      flex: 1;
+      padding: 14px;
+      background: var(--main-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      outline: none;
+      color: var(--text-color);
+      font-size: 15px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+      border-color: var(--accent-color);
+    }
+
+    button {
+      background: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 15px;
+      transition: background 0.3s ease, transform 0.1s ease;
+    }
+
+    button:hover {
+      background: #444;
+    }
+
+    button:active {
+      background: #333;
+      transform: translateY(1px);
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <input id="input" type="text" placeholder="Parle à Altesse IA...">
+      <button onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+  <script>
+    const messages = document.getElementById("messages");
+    const input = document.getElementById("input");
+    
+    function addMessage(text, type) {
+      const msg = document.createElement("div");
+      msg.classList.add("msg", type);
+      msg.textContent = text;
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+    
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      
+      addMessage(text, "user");
+      input.value = "";
+      
+      const loadingMessage = "entrain d'écrire....";
+      const loadingMsgElement = document.createElement("div");
+      loadingMsgElement.classList.add("msg", "bot", "loading-indicator");
+      loadingMsgElement.textContent = loadingMessage;
+      messages.appendChild(loadingMsgElement);
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        // !!! IMPORTANT : Remplacez cette URL par l'URL de votre propre API ALTESSE !!!
+        const res = await fetch("https://kyotaka-api.vercel.app/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: text })
+        });
+        const data = await res.json();
+        
+        messages.removeChild(loadingMsgElement);
+
+        addMessage(data.reply || data.message || JSON.stringify(data), "bot");
+      } catch (error) {
+        console.error("Erreur lors de l'appel API:", error);
+        messages.removeChild(loadingMsgElement);
+        addMessage("Connexion instable. Altesse IA ne peut pas répondre pour le moment. Réessayez plus tard.", "bot");
+      }
+    }
+    
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    // Message d'initialisation personnalisé pour Altesse IA
+    window.onload = () => {
+        addMessage("Salutations. Je suis Altesse IA, une création de Son Altesse. Comment puis-je vous assister ?", "bot");
+    };
+  </script>
+</body>
+</html>
