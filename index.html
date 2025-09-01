@@ -2,10 +2,12 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title> ALTESSE IA</title>
+  <title>Chatbot ALTESSE IA</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
   <style>
+    /* Palette de couleurs en noir et blanc */
     :root {
       --main-bg: #fff;
       --container-bg: #f8f8f8;
@@ -17,6 +19,7 @@
       --border-color: #ccc;
     }
 
+    /* Styles généraux du corps de la page */
     body {
       margin: 0;
       background: var(--main-bg);
@@ -29,6 +32,7 @@
       overflow: hidden;
     }
 
+    /* Conteneur principal du chat */
     .chat-container {
       width: 100%;
       max-width: 500px;
@@ -41,6 +45,25 @@
       overflow: hidden;
     }
 
+    /* En-tête du chat avec titre et bouton */
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      border-bottom: 1px solid var(--border-color);
+      background: var(--container-bg);
+    }
+    .chat-header h3 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .chat-header button {
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+    
+    /* Zone des messages de chat */
     .messages {
       flex: 1;
       padding: 15px;
@@ -54,18 +77,7 @@
       scrollbar-color: var(--accent-color) var(--border-color);
     }
 
-    .messages::-webkit-scrollbar {
-      width: 8px;
-    }
-    .messages::-webkit-scrollbar-track {
-      background: var(--border-color);
-    }
-    .messages::-webkit-scrollbar-thumb {
-      background-color: var(--accent-color);
-      border-radius: 20px;
-      border: 2px solid var(--border-color);
-    }
-
+    /* Style des bulles de messages */
     .msg {
       padding: 12px 18px;
       border-radius: 20px;
@@ -88,6 +100,7 @@
       border-bottom-left-radius: 5px;
     }
 
+    /* Zone de saisie (input et bouton d'envoi) */
     .input-area {
       display: flex;
       border-top: 1px solid var(--border-color);
@@ -132,20 +145,49 @@
       background: #333;
       transform: translateY(1px);
     }
+
+    /* Conteneur pour la galerie d'images */
+    .gallery-container {
+      flex: 1;
+      display: none; /* Initialement caché */
+      padding: 15px;
+      overflow-y: auto;
+      text-align: center;
+      background: var(--message-bg);
+    }
+    .gallery-container img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin-top: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
   </style>
 </head>
 <body>
+  
   <div class="chat-container">
+    <div class="chat-header">
+      <h3>ALTESSE IA</h3>
+      <button onclick="toggleGallery()">Générer Photo</button>
+    </div>
+    
     <div class="messages" id="messages"></div>
+    <div class="gallery-container" id="gallery-container"></div>
+    
     <div class="input-area">
       <input id="input" type="text" placeholder="Parle à Altesse IA...">
       <button onclick="sendMessage()">➤</button>
     </div>
   </div>
+
   <script>
+    // Récupération des éléments du DOM
     const messages = document.getElementById("messages");
     const input = document.getElementById("input");
+    const galleryContainer = document.getElementById("gallery-container");
     
+    // Fonction pour ajouter un message au chat
     function addMessage(text, type) {
       const msg = document.createElement("div");
       msg.classList.add("msg", type);
@@ -154,6 +196,14 @@
       messages.scrollTop = messages.scrollHeight;
     }
     
+    // Fonction pour basculer entre le chat et la galerie
+    function toggleGallery() {
+      const isGalleryVisible = galleryContainer.style.display === 'flex';
+      messages.style.display = isGalleryVisible ? 'flex' : 'none';
+      galleryContainer.style.display = isGalleryVisible ? 'none' : 'flex';
+    }
+
+    // Fonction pour envoyer un message à l'IA
     async function sendMessage() {
       const text = input.value.trim();
       if (!text) return;
@@ -161,7 +211,7 @@
       addMessage(text, "user");
       input.value = "";
       
-      const loadingMessage = "entrain d'écrire....";
+      const loadingMessage = "Altesse IA est en ligne...";
       const loadingMsgElement = document.createElement("div");
       loadingMsgElement.classList.add("msg", "bot", "loading-indicator");
       loadingMsgElement.textContent = loadingMessage;
@@ -169,8 +219,8 @@
       messages.scrollTop = messages.scrollHeight;
 
       try {
-        // !!! IMPORTANT : Remplacez cette URL par l'URL de votre propre API ALTESSE !!!
-        const res = await fetch("https://kyotaka-api.vercel.app/", {
+        // !!! URL DE L'API CHATBOT - À REMPLACER !!!
+        const res = await fetch("L'URL DE VOTRE API ALTESSE ICI", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: text })
@@ -178,7 +228,6 @@
         const data = await res.json();
         
         messages.removeChild(loadingMsgElement);
-
         addMessage(data.reply || data.message || JSON.stringify(data), "bot");
       } catch (error) {
         console.error("Erreur lors de l'appel API:", error);
@@ -186,12 +235,47 @@
         addMessage("Connexion instable. Altesse IA ne peut pas répondre pour le moment. Réessayez plus tard.", "bot");
       }
     }
+
+    // Fonction pour générer une photo via une API
+    async function generatePhoto() {
+        toggleGallery(); // Affiche la galerie
+        galleryContainer.innerHTML = '<p>Génération de l\'image en cours...</p>';
+
+        const apiKey = 'A301dfc6f37b29f2deae7f80a9ac5d29';
+
+        try {
+            // !!! URL DE L'API DE GÉNÉRATION D'IMAGES - À REMPLACER !!!
+            const res = await fetch("https://api.image-generation-service.com/generate", {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}` 
+                },
+                body: JSON.stringify({ prompt: "Votre prompt ici" })
+            });
+            const data = await res.json();
+            
+            if (data.imageUrl) {
+                galleryContainer.innerHTML = '';
+                const newImage = document.createElement('img');
+                newImage.src = data.imageUrl;
+                newImage.alt = "Image générée par l'IA";
+                galleryContainer.appendChild(newImage);
+            } else {
+                galleryContainer.innerHTML = '<p>Erreur: Impossible de générer la photo.</p>';
+            }
+        } catch (error) {
+            console.error("Erreur lors de la génération de l'image:", error);
+            galleryContainer.innerHTML = '<p>Erreur: Problème de connexion avec l\'API de génération d\'images.</p>';
+        }
+    }
     
+    // Événement pour envoyer un message en appuyant sur Entrée
     input.addEventListener("keydown", e => {
       if (e.key === "Enter") sendMessage();
     });
 
-    // Message d'initialisation personnalisé pour Altesse IA
+    // Message d'initialisation au chargement de la page
     window.onload = () => {
         addMessage("Salutations. Je suis Altesse IA, une création de Son Altesse. Comment puis-je vous assister ?", "bot");
     };
