@@ -219,8 +219,8 @@
       messages.scrollTop = messages.scrollHeight;
 
       try {
-        // !!! URL DE L'API CHATBOT - À REMPLACER !!!
-        const res = await fetch("L'URL DE VOTRE API ALTESSE ICI", {
+        // L'API a été mise à jour ici avec le lien que vous avez fourni
+        const res = await fetch("https://kyotaka-api.vercel.app/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: text })
@@ -244,7 +244,7 @@
         const apiKey = 'A301dfc6f37b29f2deae7f80a9ac5d29';
 
         try {
-            // !!! URL DE L'API DE GÉNÉRATION D'IMAGES - À REMPLACER !!!
+            // L'API de génération de photos reste inchangée
             const res = await fetch("https://api.image-generation-service.com/generate", {
                 method: "POST",
                 headers: { 
