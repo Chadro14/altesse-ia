@@ -60,10 +60,8 @@ async function sendMessage() {
     const data = await res.json();
     const botReply = data.reply || data.message || JSON.stringify(data);
     addMessage(botReply, "bot");
-    speakMessage(botReply);
   } catch {
     addMessage("Erreur API", "bot");
-    speakMessage("Erreur de connexion à l'API de Kyotaka.");
   }
 }
 
@@ -86,14 +84,11 @@ async function restorePhoto(file) {
         const restoredImageUrl = "data:image/png;base64," + data.image_base64;
         addMessage("Votre photo restaurée :", "bot");
         addMessage(restoredImageUrl, "bot", true);
-        speakMessage("Votre photo a été restaurée.");
       } else {
         addMessage("Erreur lors de la restauration : " + (data.message || JSON.stringify(data)), "bot");
-        speakMessage("Une erreur est survenue lors de la restauration de la photo.");
       }
     } catch (error) {
       addMessage("Erreur API lors de la restauration", "bot");
-      speakMessage("Impossible de se connecter à l'API de restauration de photos.");
     }
   };
   reader.readAsDataURL(file);
@@ -103,7 +98,6 @@ async function generateImage() {
     const prompt = input.value.trim();
     if (!prompt) {
         addMessage("Veuillez entrer une description d'image.", "bot");
-        speakMessage("Veuillez entrer une description d'image.");
         return;
     }
     addMessage(`Génération d'image pour : "${prompt}"`, "user");
@@ -121,14 +115,11 @@ async function generateImage() {
         if (data.status === "success" && data.output_url) {
             addMessage("Votre image générée :", "bot");
             addMessage(data.output_url, "bot", true, 'image');
-            speakMessage("Votre image a été générée.");
         } else {
             addMessage("Erreur lors de la génération d'image : " + (data.message || JSON.stringify(data)), "bot");
-            speakMessage("Une erreur est survenue lors de la génération d'image.");
         }
     } catch (error) {
         addMessage("Erreur API lors de la génération d'image.", "bot");
-        speakMessage("Impossible de se connecter à l'API de génération d'image.");
     }
 }
 
@@ -136,7 +127,6 @@ async function generateVideo() {
     const prompt = input.value.trim();
     if (!prompt) {
         addMessage("Veuillez entrer une description de vidéo.", "bot");
-        speakMessage("Veuillez entrer une description de vidéo.");
         return;
     }
     addMessage(`Génération de vidéo pour : "${prompt}"`, "user");
@@ -154,14 +144,11 @@ async function generateVideo() {
         if (data.status === "success" && data.output_url) {
             addMessage("Votre vidéo générée :", "bot");
             addMessage(data.output_url, "bot", true, 'video');
-            speakMessage("Votre vidéo a été générée.");
         } else {
             addMessage("Erreur lors de la génération de vidéo : " + (data.message || JSON.stringify(data)), "bot");
-            speakMessage("Une erreur est survenue lors de la génération de vidéo.");
         }
     } catch (error) {
         addMessage("Erreur API lors de la génération de vidéo.", "bot");
-        speakMessage("Impossible de se connecter à l'API de génération de vidéo.");
     }
 }
 
@@ -210,4 +197,4 @@ recognition.onend = () => {
         recognition.start();
     }
 };
-    
+
