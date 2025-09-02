@@ -7,9 +7,9 @@
   <style>
     body {
       margin: 0;
-      background: #000000; /* Fond noir */
-      color: #ffffff; /* Texte blanc */
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Police plus professionnelle */
+      background: #000000;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -21,51 +21,51 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
-      background: #1a1a1a; /* Fond du chat légèrement plus clair que le body pour le contraste */
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Ombre légère pour un effet moderne */
+      background: #1a1a1a;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
     }
     .messages {
       flex: 1;
-      padding: 15px; /* Augmenté pour un look plus aéré */
+      padding: 15px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 10px; /* Augmenté l'espacement entre les messages */
+      gap: 10px;
     }
     .msg {
-      padding: 12px 18px; /* Augmenté pour un look plus professionnel */
-      border-radius: 20px; /* Rayon plus grand pour des bulles de conversation douces */
+      padding: 12px 18px;
+      border-radius: 20px;
       max-width: 80%;
       word-wrap: break-word;
-      font-size: 15px; /* Taille de police légèrement plus grande */
-      line-height: 1.4; /* Espacement de ligne pour une meilleure lisibilité */
+      font-size: 15px;
+      line-height: 1.4;
     }
     .user {
       align-self: flex-end;
-      background: #007bff; /* Bleu professionnel pour l'utilisateur */
+      background: #007bff;
       color: #ffffff;
-      border-bottom-right-radius: 5px; /* Petite touche de design */
+      border-bottom-right-radius: 5px;
     }
     .bot {
       align-self: flex-start;
-      background: #343a40; /* Gris foncé pour le bot */
+      background: #343a40;
       color: #ffffff;
-      border-bottom-left-radius: 5px; /* Petite touche de design */
+      border-bottom-left-radius: 5px;
     }
     .input-area {
       display: flex;
-      border-top: 1px solid #333333; /* Bordure plus claire */
-      padding: 10px; /* Espacement accru */
-      gap: 8px; /* Espacement accru */
+      border-top: 1px solid #333333;
+      padding: 10px;
+      gap: 8px;
       align-items: center;
-      background: #2a2a2a; /* Fond de la zone de saisie */
+      background: #2a2a2a;
     }
     input[type="text"] {
       flex: 1;
-      padding: 14px; /* Augmenté le padding */
-      background: #3a3a3a; /* Fond de l'input */
-      border: 1px solid #555555; /* Bordure plus douce */
-      border-radius: 25px; /* Bords arrondis pour l'input */
+      padding: 14px;
+      background: #3a3a3a;
+      border: 1px solid #555555;
+      border-radius: 25px;
       outline: none;
       color: #ffffff;
       font-size: 15px;
@@ -74,28 +74,37 @@
       display: none;
     }
     button {
-      background: #007bff; /* Bleu professionnel pour les boutons */
+      background: #007bff;
       color: #ffffff;
       border: none;
-      border-radius: 25px; /* Bords arrondis pour les boutons */
-      padding: 0 20px; /* Augmenté le padding */
+      border-radius: 25px;
+      padding: 0 20px;
       cursor: pointer;
       font-weight: bold;
-      font-size: 16px; /* Taille de police légèrement plus grande */
-      height: 48px; /* Hauteur légèrement plus grande */
+      font-size: 16px;
+      height: 48px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background 0.3s ease; /* Transition douce au survol/clic */
+      transition: background 0.3s ease;
     }
     button:hover {
-      background: #0056b3; /* Bleu plus foncé au survol */
+      background: #0056b3;
     }
     button:active {
       background: #004085;
     }
+    .ai-button {
+      background: #ff5722; /* Orange pour l'IA */
+    }
+    .ai-button:hover {
+      background: #e64a19;
+    }
+    .ai-button:active {
+      background: #bf360c;
+    }
     .restore-button {
-      background: #6f42c1; /* Violet pour le bouton de restauration */
+      background: #6f42c1;
     }
     .restore-button:hover {
       background: #5a2eac;
@@ -108,12 +117,12 @@
       height: auto;
       margin-top: 10px;
       border-radius: 8px;
-      overflow: hidden; /* Pour que l'image soit bien contenue */
+      overflow: hidden;
     }
-    .image-container img {
+    .image-container img, .image-container video {
       width: 100%;
       height: auto;
-      display: block; /* Supprime l'espace sous l'image */
+      display: block;
       border-radius: 8px;
     }
   </style>
@@ -126,6 +135,8 @@
       <button class="restore-button" onclick="document.getElementById('restoreFile').click()">✨</button>
       <input id="input" type="text" placeholder="Écrivez votre message ici...">
       <button onclick="sendMessage()">➤</button>
+      <button class="ai-button" onclick="generateImage()">🖼️</button>
+      <button class="ai-button" onclick="generateVideo()">🎬</button>
     </div>
   </div>
   <script>
@@ -140,16 +151,22 @@
     `;
     addMessage(botNote, "bot");
 
-    function addMessage(content, type, isImage = false) {
+    function addMessage(content, type, isMedia = false, mediaType = 'image') {
       const msg = document.createElement("div");
       msg.classList.add("msg", type);
-      if (isImage) {
-        const imgContainer = document.createElement("div");
-        imgContainer.classList.add("image-container");
-        const img = document.createElement("img");
-        img.src = content;
-        imgContainer.appendChild(img);
-        msg.appendChild(imgContainer);
+      if (isMedia) {
+        const mediaContainer = document.createElement("div");
+        mediaContainer.classList.add("image-container");
+        let mediaElement;
+        if (mediaType === 'image') {
+          mediaElement = document.createElement("img");
+        } else {
+          mediaElement = document.createElement("video");
+          mediaElement.controls = true;
+        }
+        mediaElement.src = content;
+        mediaContainer.appendChild(mediaElement);
+        msg.appendChild(mediaContainer);
       } else {
         msg.innerHTML = content.replace(/\n/g, '<br>');
       }
@@ -186,7 +203,7 @@
             headers: {
               "Content-Type": "application/json",
               // REMPLACER ICI AVEC VOTRE CLÉ D'API
-              "x-api-key": "https://api.market/store/magicapi/ai-photo-restoration-colorization" // Assurez-vous d'avoir remplacé ceci
+              "x-api-key": "VOTRE_CLÉ_D'API"
             },
             body: JSON.stringify({ image_base64: base64Image, mode: "colorization" })
           });
@@ -204,7 +221,65 @@
       };
       reader.readAsDataURL(file);
     }
+    
+    async function generateImage() {
+        const prompt = input.value.trim();
+        if (!prompt) {
+            addMessage("Veuillez entrer une description d'image.", "bot");
+            return;
+        }
+        addMessage(`Génération d'image pour : "${prompt}"`, "user");
+        input.value = "";
+        try {
+            const res = await fetch("https://api.kie.ai/v1/image-generation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": "VOTRE_CLÉ_D'API" // REMPLACER ICI
+                },
+                body: JSON.stringify({ prompt: prompt, model: "midjourney" })
+            });
+            const data = await res.json();
+            if (data.status === "success" && data.output_url) {
+                addMessage("Votre image générée :", "bot");
+                addMessage(data.output_url, "bot", true, 'image');
+            } else {
+                addMessage("Erreur lors de la génération d'image : " + (data.message || JSON.stringify(data)), "bot");
+            }
+        } catch (error) {
+            addMessage("Erreur API lors de la génération d'image.", "bot");
+        }
+    }
 
+    async function generateVideo() {
+        const prompt = input.value.trim();
+        if (!prompt) {
+            addMessage("Veuillez entrer une description de vidéo.", "bot");
+            return;
+        }
+        addMessage(`Génération de vidéo pour : "${prompt}"`, "user");
+        input.value = "";
+        try {
+            const res = await fetch("https://api.kie.ai/v1/video-generation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": "VOTRE_CLÉ_D'API" // REMPLACER ICI
+                },
+                body: JSON.stringify({ prompt: prompt, model: "veo3" })
+            });
+            const data = await res.json();
+            if (data.status === "success" && data.output_url) {
+                addMessage("Votre vidéo générée :", "bot");
+                addMessage(data.output_url, "bot", true, 'video');
+            } else {
+                addMessage("Erreur lors de la génération de vidéo : " + (data.message || JSON.stringify(data)), "bot");
+            }
+        } catch (error) {
+            addMessage("Erreur API lors de la génération de vidéo.", "bot");
+        }
+    }
+    
     input.addEventListener("keydown", e => {
       if (e.key === "Enter") sendMessage();
     });
