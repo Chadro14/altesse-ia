@@ -54,11 +54,21 @@
     }
     .input-area {
       display: flex;
+      flex-direction: column;
       border-top: 1px solid #333333;
       padding: 10px;
-      gap: 8px;
-      align-items: center;
       background: #2a2a2a;
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .button-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+      gap: 5px;
     }
     input[type="text"] {
       flex: 1;
@@ -141,13 +151,17 @@
   <div class="chat-container">
     <div class="messages" id="messages"></div>
     <div class="input-area">
-      <input id="restoreFile" type="file" accept="image/*">
-      <button class="restore-button" onclick="document.getElementById('restoreFile').click()">✨</button>
-      <button class="voice-button" id="voiceButton">🎙️</button>
-      <input id="input" type="text" placeholder="Écrivez votre message ici...">
-      <button onclick="sendMessage()">➤</button>
-      <button class="ai-button" onclick="generateImage()">🖼️</button>
-      <button class="ai-button" onclick="generateVideo()">🎬</button>
+      <div class="input-row">
+        <input id="input" type="text" placeholder="Écrivez votre message ici...">
+        <button onclick="sendMessage()">➤</button>
+      </div>
+      <div class="button-row">
+        <input id="restoreFile" type="file" accept="image/*">
+        <button class="restore-button" onclick="document.getElementById('restoreFile').click()">✨ Améliorer Photo</button>
+        <button class="voice-button" id="voiceButton">🎙️ Parler</button>
+        <button class="ai-button" onclick="generateImage()">🖼️ Générer Image</button>
+        <button class="ai-button" onclick="generateVideo()">🎬 Générer Vidéo</button>
+      </div>
     </div>
   </div>
   <script>
@@ -156,9 +170,12 @@
     const restoreFile = document.getElementById("restoreFile");
     const voiceButton = document.getElementById("voiceButton");
 
-    // Initialisation de l'API de reconnaissance vocale
+    let isListening = false;
     const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
     recognition.lang = 'fr-FR';
+
+    recognition.continuous = true;
+    recognition.interimResults = false;
 
     // Message initial du bot avec le texte personnalisé
     const botNote = `
@@ -327,21 +344,40 @@
     });
 
     voiceButton.addEventListener('click', () => {
-        addMessage("Veuillez parler...", "bot");
-        recognition.start();
+        if (!isListening) {
+            recognition.start();
+            isListening = true;
+            voiceButton.textContent = "🔴 Stop";
+            addMessage("Je vous écoute...", "bot");
+            speakMessage("Je vous écoute.");
+        } else {
+            recognition.stop();
+            isListening = false;
+            voiceButton.textContent = "🎙️ Parler";
+            addMessage("Reconnaissance vocale arrêtée.", "bot");
+            speakMessage("Reconnaissance vocale arrêtée.");
+        }
     });
-    
+
     recognition.onresult = (event) => {
-        const speech = event.results[0][0].transcript;
+        const speech = event.results[event.results.length - 1][0].transcript;
         input.value = speech;
         sendMessage();
     };
 
     recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
         addMessage(`Erreur de reconnaissance vocale : ${event.error}`, "bot");
+        isListening = false;
+        voiceButton.textContent = "🎙️ Parler";
+        speakMessage("Une erreur de reconnaissance vocale est survenue.");
     };
 
+    recognition.onend = () => {
+      if (isListening) {
+        recognition.start();
+      }
+    };
   </script>
 </body>
-  </html>
-  
+</html>
