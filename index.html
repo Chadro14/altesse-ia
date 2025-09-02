@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot Altesse AI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      margin: 0;
+      background: #000000;
+      color: #ffffff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chat-container {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: #1a1a1a;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+    .messages {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      padding: 12px 18px;
+      border-radius: 20px;
+      max-width: 80%;
+      word-wrap: break-word;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    .user {
+      align-self: flex-end;
+      background: #007bff;
+      color: #ffffff;
+      border-bottom-right-radius: 5px;
+    }
+    .bot {
+      align-self: flex-start;
+      background: #343a40;
+      color: #ffffff;
+      border-bottom-left-radius: 5px;
+    }
+    .input-area {
+      display: flex;
+      border-top: 1px solid #333333;
+      padding: 10px;
+      gap: 8px;
+      align-items: center;
+      background: #2a2a2a;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 14px;
+      background: #3a3a3a;
+      border: 1px solid #555555;
+      border-radius: 25px;
+      outline: none;
+      color: #ffffff;
+      font-size: 15px;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    button {
+      background: #007bff;
+      color: #ffffff;
+      border: none;
+      border-radius: 25px;
+      padding: 0 20px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button:active {
+      background: #004085;
+    }
+    .ai-button {
+      background: #ff5722;
+    }
+    .ai-button:hover {
+      background: #e64a19;
+    }
+    .ai-button:active {
+      background: #bf360c;
+    }
+    .restore-button {
+      background: #6f42c1;
+    }
+    .restore-button:hover {
+      background: #5a2eac;
+    }
+    .restore-button:active {
+      background: #4a219a;
+    }
+    .voice-button {
+      background: #ffcc00;
+      color: #000;
+    }
+    .voice-button:hover {
+      background: #e6b800;
+    }
+    .voice-button:active {
+      background: #cc9900;
+    }
+    .image-container {
+      max-width: 100%;
+      height: auto;
+      margin-top: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .image-container img, .image-container video {
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <input id="restoreFile" type="file" accept="image/*">
+      <button class="restore-button" onclick="document.getElementById('restoreFile').click()">✨</button>
+      <button class="voice-button" id="voiceButton">🎙️</button>
+      <input id="input" type="text" placeholder="Écrivez votre message ici...">
+      <button onclick="sendMessage()">➤</button>
+      <button class="ai-button" onclick="generateImage()">🖼️</button>
+      <button class="ai-button" onclick="generateVideo()">🎬</button>
+    </div>
+  </div>
+  <script>
+    const messages = document.getElementById("messages");
+    const input = document.getElementById("input");
+    const restoreFile = document.getElementById("restoreFile");
+    const voiceButton = document.getElementById("voiceButton");
+
+    // Initialisation de l'API de reconnaissance vocale
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'fr-FR';
+
+    // Message initial du bot avec le texte personnalisé
+    const botNote = `
+      Salut, je suis **Altesse AI**.
+      Amélioré le 2 septembre 2025 par *son Altesse*.
+    `;
+    addMessage(botNote, "bot");
+    speakMessage(botNote);
+
+    function addMessage(content, type, isMedia = false, mediaType = 'image') {
+      const msg = document.createElement("div");
+      msg.classList.add("msg", type);
+      if (isMedia) {
+        const mediaContainer = document.createElement("div");
+        mediaContainer.classList.add("image-container");
+        let mediaElement;
+        if (mediaType === 'image') {
+          mediaElement = document.createElement("img");
+        } else {
+          mediaElement = document.createElement("video");
+          mediaElement.controls = true;
+        }
+        mediaElement.src = content;
+        mediaContainer.appendChild(mediaElement);
+        msg.appendChild(mediaContainer);
+      } else {
+        msg.innerHTML = content.replace(/\n/g, '<br>');
+      }
+      messages.appendChild(msg);
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+    function speakMessage(text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'fr-FR';
+        window.speechSynthesis.speak(utterance);
+    }
+
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(text, "user");
+      input.value = "";
+      try {
+        const res = await fetch("https://kyotaka-api.vercel.app/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: text })
+        });
+        const data = await res.json();
+        const botReply = data.reply || data.message || JSON.stringify(data);
+        addMessage(botReply, "bot");
+        speakMessage(botReply);
+      } catch {
+        addMessage("Erreur API", "bot");
+        speakMessage("Erreur de connexion à l'API de Kyotaka.");
+      }
+    }
+
+    async function restorePhoto(file) {
+      addMessage("Envoi de la photo...", "user");
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result.split(',')[1];
+        try {
+          const res = await fetch("https://api.market/store/magicapi/ai-photo-restoration-colorization", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-api-key": "VOTRE_CLÉ_D'API"
+            },
+            body: JSON.stringify({ image_base64: base64Image, mode: "colorization" })
+          });
+          const data = await res.json();
+          if (data.status === "success" && data.image_base64) {
+            const restoredImageUrl = "data:image/png;base64," + data.image_base64;
+            addMessage("Votre photo restaurée :", "bot");
+            addMessage(restoredImageUrl, "bot", true);
+            speakMessage("Votre photo a été restaurée.");
+          } else {
+            addMessage("Erreur lors de la restauration : " + (data.message || JSON.stringify(data)), "bot");
+            speakMessage("Une erreur est survenue lors de la restauration de la photo.");
+          }
+        } catch (error) {
+          addMessage("Erreur API lors de la restauration", "bot");
+          speakMessage("Impossible de se connecter à l'API de restauration de photos.");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    async function generateImage() {
+        const prompt = input.value.trim();
+        if (!prompt) {
+            addMessage("Veuillez entrer une description d'image.", "bot");
+            speakMessage("Veuillez entrer une description d'image.");
+            return;
+        }
+        addMessage(`Génération d'image pour : "${prompt}"`, "user");
+        input.value = "";
+        try {
+            const res = await fetch("https://api.kie.ai/v1/image-generation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": "VOTRE_CLÉ_D'API"
+                },
+                body: JSON.stringify({ prompt: prompt, model: "midjourney" })
+            });
+            const data = await res.json();
+            if (data.status === "success" && data.output_url) {
+                addMessage("Votre image générée :", "bot");
+                addMessage(data.output_url, "bot", true, 'image');
+                speakMessage("Votre image a été générée.");
+            } else {
+                addMessage("Erreur lors de la génération d'image : " + (data.message || JSON.stringify(data)), "bot");
+                speakMessage("Une erreur est survenue lors de la génération d'image.");
+            }
+        } catch (error) {
+            addMessage("Erreur API lors de la génération d'image.", "bot");
+            speakMessage("Impossible de se connecter à l'API de génération d'image.");
+        }
+    }
+
+    async function generateVideo() {
+        const prompt = input.value.trim();
+        if (!prompt) {
+            addMessage("Veuillez entrer une description de vidéo.", "bot");
+            speakMessage("Veuillez entrer une description de vidéo.");
+            return;
+        }
+        addMessage(`Génération de vidéo pour : "${prompt}"`, "user");
+        input.value = "";
+        try {
+            const res = await fetch("https://api.kie.ai/v1/video-generation", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": "VOTRE_CLÉ_D'API"
+                },
+                body: JSON.stringify({ prompt: prompt, model: "veo3" })
+            });
+            const data = await res.json();
+            if (data.status === "success" && data.output_url) {
+                addMessage("Votre vidéo générée :", "bot");
+                addMessage(data.output_url, "bot", true, 'video');
+                speakMessage("Votre vidéo a été générée.");
+            } else {
+                addMessage("Erreur lors de la génération de vidéo : " + (data.message || JSON.stringify(data)), "bot");
+                speakMessage("Une erreur est survenue lors de la génération de vidéo.");
+            }
+        } catch (error) {
+            addMessage("Erreur API lors de la génération de vidéo.", "bot");
+            speakMessage("Impossible de se connecter à l'API de génération de vidéo.");
+        }
+    }
+    
+    input.addEventListener("keydown", e => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    restoreFile.addEventListener("change", (e) => {
+      if (e.target.files.length > 0) {
+        restorePhoto(e.target.files[0]);
+      }
+    });
+
+    voiceButton.addEventListener('click', () => {
+        addMessage("Veuillez parler...", "bot");
+        recognition.start();
+    });
+    
+    recognition.onresult = (event) => {
+        const speech = event.results[0][0].transcript;
+        input.value = speech;
+        sendMessage();
+    };
+
+    recognition.onerror = (event) => {
+        addMessage(`Erreur de reconnaissance vocale : ${event.error}`, "bot");
+    };
+
+  </script>
+</body>
+  </html>
+  
