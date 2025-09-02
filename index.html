@@ -2,283 +2,218 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Chatbot ALTESSE IA</title>
+  <title>Chatbot Altesse</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-  
   <style>
-    /* Palette de couleurs en noir et blanc */
-    :root {
-      --main-bg: #fff;
-      --container-bg: #f8f8f8;
-      --message-bg: #fff;
-      --user-msg-bg: #e0e0e0;
-      --bot-msg-bg: #f0f0f0;
-      --text-color: #000;
-      --accent-color: #555;
-      --border-color: #ccc;
-    }
-
-    /* Styles généraux du corps de la page */
     body {
       margin: 0;
-      background: var(--main-bg);
-      color: var(--text-color);
-      font-family: 'Roboto Mono', monospace;
+      background: #000000; /* Fond noir */
+      color: #ffffff; /* Texte blanc */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Police plus professionnelle */
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      overflow: hidden;
+      height: 100vh;
     }
-
-    /* Conteneur principal du chat */
     .chat-container {
       width: 100%;
-      max-width: 500px;
-      height: 95vh;
+      max-width: 480px;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      background: var(--container-bg);
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      overflow: hidden;
+      background: #1a1a1a; /* Fond du chat légèrement plus clair que le body pour le contraste */
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5); /* Ombre légère pour un effet moderne */
     }
-
-    /* En-tête du chat avec titre et bouton */
-    .chat-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 15px;
-      border-bottom: 1px solid var(--border-color);
-      background: var(--container-bg);
-    }
-    .chat-header h3 {
-      margin: 0;
-      font-size: 18px;
-    }
-    .chat-header button {
-      padding: 8px 12px;
-      font-size: 14px;
-    }
-    
-    /* Zone des messages de chat */
     .messages {
       flex: 1;
-      padding: 15px;
+      padding: 15px; /* Augmenté pour un look plus aéré */
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      background: var(--message-bg);
-      border-bottom: 1px solid var(--border-color);
-      scrollbar-width: thin;
-      scrollbar-color: var(--accent-color) var(--border-color);
+      gap: 10px; /* Augmenté l'espacement entre les messages */
     }
-
-    /* Style des bulles de messages */
     .msg {
-      padding: 12px 18px;
-      border-radius: 20px;
-      max-width: 75%;
+      padding: 12px 18px; /* Augmenté pour un look plus professionnel */
+      border-radius: 20px; /* Rayon plus grand pour des bulles de conversation douces */
+      max-width: 80%;
       word-wrap: break-word;
-      font-size: 15px;
-      line-height: 1.5;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      font-size: 15px; /* Taille de police légèrement plus grande */
+      line-height: 1.4; /* Espacement de ligne pour une meilleure lisibilité */
     }
-
     .user {
       align-self: flex-end;
-      background: var(--user-msg-bg);
-      border-bottom-right-radius: 5px;
+      background: #007bff; /* Bleu professionnel pour l'utilisateur */
+      color: #ffffff;
+      border-bottom-right-radius: 5px; /* Petite touche de design */
     }
-
     .bot {
       align-self: flex-start;
-      background: var(--bot-msg-bg);
-      border-bottom-left-radius: 5px;
+      background: #343a40; /* Gris foncé pour le bot */
+      color: #ffffff;
+      border-bottom-left-radius: 5px; /* Petite touche de design */
     }
-
-    /* Zone de saisie (input et bouton d'envoi) */
     .input-area {
       display: flex;
-      border-top: 1px solid var(--border-color);
-      padding: 10px;
-      gap: 10px;
-      background: var(--container-bg);
+      border-top: 1px solid #333333; /* Bordure plus claire */
+      padding: 10px; /* Espacement accru */
+      gap: 8px; /* Espacement accru */
+      align-items: center;
+      background: #2a2a2a; /* Fond de la zone de saisie */
     }
-
-    input {
+    input[type="text"] {
       flex: 1;
-      padding: 14px;
-      background: var(--main-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
+      padding: 14px; /* Augmenté le padding */
+      background: #3a3a3a; /* Fond de l'input */
+      border: 1px solid #555555; /* Bordure plus douce */
+      border-radius: 25px; /* Bords arrondis pour l'input */
       outline: none;
-      color: var(--text-color);
+      color: #ffffff;
       font-size: 15px;
-      transition: border-color 0.3s ease;
     }
-
-    input:focus {
-      border-color: var(--accent-color);
+    input[type="file"] {
+      display: none;
     }
-
     button {
-      background: var(--accent-color);
-      color: #fff;
+      background: #007bff; /* Bleu professionnel pour les boutons */
+      color: #ffffff;
       border: none;
-      border-radius: 10px;
-      padding: 0 20px;
+      border-radius: 25px; /* Bords arrondis pour les boutons */
+      padding: 0 20px; /* Augmenté le padding */
       cursor: pointer;
       font-weight: bold;
-      font-size: 15px;
-      transition: background 0.3s ease, transform 0.1s ease;
+      font-size: 16px; /* Taille de police légèrement plus grande */
+      height: 48px; /* Hauteur légèrement plus grande */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s ease; /* Transition douce au survol/clic */
     }
-
     button:hover {
-      background: #444;
+      background: #0056b3; /* Bleu plus foncé au survol */
     }
-
     button:active {
-      background: #333;
-      transform: translateY(1px);
+      background: #004085;
     }
-
-    /* Conteneur pour la galerie d'images */
-    .gallery-container {
-      flex: 1;
-      display: none; /* Initialement caché */
-      padding: 15px;
-      overflow-y: auto;
-      text-align: center;
-      background: var(--message-bg);
+    .restore-button {
+      background: #6f42c1; /* Violet pour le bouton de restauration */
     }
-    .gallery-container img {
+    .restore-button:hover {
+      background: #5a2eac;
+    }
+    .restore-button:active {
+      background: #4a219a;
+    }
+    .image-container {
       max-width: 100%;
       height: auto;
-      border-radius: 8px;
       margin-top: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden; /* Pour que l'image soit bien contenue */
+    }
+    .image-container img {
+      width: 100%;
+      height: auto;
+      display: block; /* Supprime l'espace sous l'image */
+      border-radius: 8px;
     }
   </style>
 </head>
 <body>
-  
   <div class="chat-container">
-    <div class="chat-header">
-      <h3>ALTESSE IA</h3>
-      <button onclick="toggleGallery()">Générer Photo</button>
-    </div>
-    
     <div class="messages" id="messages"></div>
-    <div class="gallery-container" id="gallery-container"></div>
-    
     <div class="input-area">
-      <input id="input" type="text" placeholder="Parle à Altesse IA...">
+      <input id="restoreFile" type="file" accept="image/*">
+      <button class="restore-button" onclick="document.getElementById('restoreFile').click()">✨</button>
+      <input id="input" type="text" placeholder="Écrivez votre message ici...">
       <button onclick="sendMessage()">➤</button>
     </div>
   </div>
-
   <script>
-    // Récupération des éléments du DOM
     const messages = document.getElementById("messages");
     const input = document.getElementById("input");
-    const galleryContainer = document.getElementById("gallery-container");
-    
-    // Fonction pour ajouter un message au chat
-    function addMessage(text, type) {
+    const restoreFile = document.getElementById("restoreFile");
+
+    // Message initial du bot avec le texte personnalisé
+    const botNote = `
+      Salut, je suis la nouvelle version de Altesse.
+      Amélioré le 2 septembre 2025 par *son Altesse*.
+    `;
+    addMessage(botNote, "bot");
+
+    function addMessage(content, type, isImage = false) {
       const msg = document.createElement("div");
       msg.classList.add("msg", type);
-      msg.textContent = text;
+      if (isImage) {
+        const imgContainer = document.createElement("div");
+        imgContainer.classList.add("image-container");
+        const img = document.createElement("img");
+        img.src = content;
+        imgContainer.appendChild(img);
+        msg.appendChild(imgContainer);
+      } else {
+        msg.innerHTML = content.replace(/\n/g, '<br>');
+      }
       messages.appendChild(msg);
       messages.scrollTop = messages.scrollHeight;
     }
-    
-    // Fonction pour basculer entre le chat et la galerie
-    function toggleGallery() {
-      const isGalleryVisible = galleryContainer.style.display === 'flex';
-      messages.style.display = isGalleryVisible ? 'flex' : 'none';
-      galleryContainer.style.display = isGalleryVisible ? 'none' : 'flex';
-    }
 
-    // Fonction pour envoyer un message à l'IA
     async function sendMessage() {
       const text = input.value.trim();
       if (!text) return;
-      
       addMessage(text, "user");
       input.value = "";
-      
-      const loadingMessage = "Altesse IA est en ligne...";
-      const loadingMsgElement = document.createElement("div");
-      loadingMsgElement.classList.add("msg", "bot", "loading-indicator");
-      loadingMsgElement.textContent = loadingMessage;
-      messages.appendChild(loadingMsgElement);
-      messages.scrollTop = messages.scrollHeight;
-
       try {
-        // L'API a été mise à jour ici avec le lien que vous avez fourni
         const res = await fetch("https://kyotaka-api.vercel.app/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: text })
         });
         const data = await res.json();
-        
-        messages.removeChild(loadingMsgElement);
         addMessage(data.reply || data.message || JSON.stringify(data), "bot");
-      } catch (error) {
-        console.error("Erreur lors de l'appel API:", error);
-        messages.removeChild(loadingMsgElement);
-        addMessage("Connexion instable. Altesse IA ne peut pas répondre pour le moment. Réessayez plus tard.", "bot");
+      } catch {
+        addMessage("Erreur API", "bot");
       }
     }
 
-    // Fonction pour générer une photo via une API
-    async function generatePhoto() {
-        toggleGallery(); // Affiche la galerie
-        galleryContainer.innerHTML = '<p>Génération de l\'image en cours...</p>';
-
-        const apiKey = 'A301dfc6f37b29f2deae7f80a9ac5d29';
-
+    async function restorePhoto(file) {
+      addMessage("Envoi de la photo...", "user");
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64Image = reader.result.split(',')[1];
         try {
-            // L'API de génération de photos reste inchangée
-            const res = await fetch("https://api.image-generation-service.com/generate", {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiKey}` 
-                },
-                body: JSON.stringify({ prompt: "Votre prompt ici" })
-            });
-            const data = await res.json();
-            
-            if (data.imageUrl) {
-                galleryContainer.innerHTML = '';
-                const newImage = document.createElement('img');
-                newImage.src = data.imageUrl;
-                newImage.alt = "Image générée par l'IA";
-                galleryContainer.appendChild(newImage);
-            } else {
-                galleryContainer.innerHTML = '<p>Erreur: Impossible de générer la photo.</p>';
-            }
+          const res = await fetch("https://api.market/store/magicapi/ai-photo-restoration-colorization", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // REMPLACER ICI AVEC VOTRE CLÉ D'API
+              "x-api-key": "https://api.market/store/magicapi/ai-photo-restoration-colorization" // Assurez-vous d'avoir remplacé ceci
+            },
+            body: JSON.stringify({ image_base64: base64Image, mode: "colorization" })
+          });
+          const data = await res.json();
+          if (data.status === "success" && data.image_base64) {
+            const restoredImageUrl = "data:image/png;base64," + data.image_base64;
+            addMessage("Votre photo restaurée :", "bot");
+            addMessage(restoredImageUrl, "bot", true);
+          } else {
+            addMessage("Erreur lors de la restauration : " + (data.message || JSON.stringify(data)), "bot");
+          }
         } catch (error) {
-            console.error("Erreur lors de la génération de l'image:", error);
-            galleryContainer.innerHTML = '<p>Erreur: Problème de connexion avec l\'API de génération d\'images.</p>';
+          addMessage("Erreur API lors de la restauration", "bot");
         }
+      };
+      reader.readAsDataURL(file);
     }
-    
-    // Événement pour envoyer un message en appuyant sur Entrée
+
     input.addEventListener("keydown", e => {
       if (e.key === "Enter") sendMessage();
     });
 
-    // Message d'initialisation au chargement de la page
-    window.onload = () => {
-        addMessage("Salutations. Je suis Altesse IA, une création de Son Altesse. Comment puis-je vous assister ?", "bot");
-    };
+    restoreFile.addEventListener("change", (e) => {
+      if (e.target.files.length > 0) {
+        restorePhoto(e.target.files[0]);
+      }
+    });
   </script>
 </body>
 </html>
