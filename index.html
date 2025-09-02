@@ -235,7 +235,7 @@
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": "VOTRE_CLÉ_D'API" // REMPLACER ICI
+                    "x-api-key": "https://api.kie.ai" // REMPLACER ICI
                 },
                 body: JSON.stringify({ prompt: prompt, model: "midjourney" })
             });
@@ -260,11 +260,11 @@
         addMessage(`Génération de vidéo pour : "${prompt}"`, "user");
         input.value = "";
         try {
-            const res = await fetch("https://api.kie.ai/v1/video-generation", {
+            const res = await fetch("https://api.kie.ai", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "x-api-key": "https://api.kie.ai/v1/image-generation" // REMPLACER ICI
+                    "x-api-key": "https://api.kie.ai" // REMPLACER ICI
                 },
                 body: JSON.stringify({ prompt: prompt, model: "veo3" })
             });
