@@ -95,22 +95,30 @@ async function sendMessage() {
   addMessage(text, "user");
   input.value = "";
   try {
-    const res = await fetch("https://api.gemini.ai/v1/chat", {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "Authorization": "Bearer VOTRE_CLÉ_D'API_GEMINI" 
+        "Authorization": "Import OpenAI from "openai";
+const client = new OpenAI();
+
+const response = await client.responses.create({
+    model: "gpt-5",
+    input: "Write a one-sentence bedtime story about a unicorn."
+});
+
+console.log(response.output_text);" // ⬅️ COLLEZ VOTRE CLÉ ICI !
       },
-      body: JSON.stringify({ 
-        model: "gemini-pro",
-        prompt: { text: text }
+      body: JSON.stringify({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: text }]
       })
     });
     const data = await res.json();
-    const botReply = data.replies[0].text || data.message || JSON.stringify(data);
+    const botReply = data.choices[0].message.content || data.error.message || JSON.stringify(data);
     addMessage(botReply, "bot");
-  } catch {
-    addMessage("Erreur API", "bot");
+  } catch (error) {
+    addMessage("Erreur lors de la connexion à l'API OpenAI.", "bot");
   }
 }
 
@@ -274,4 +282,3 @@ voiceButton.addEventListener('click', () => {
         recognition.start();
     }
 });
-        
