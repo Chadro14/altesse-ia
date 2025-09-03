@@ -95,13 +95,19 @@ async function sendMessage() {
   addMessage(text, "user");
   input.value = "";
   try {
-    const res = await fetch("https://kyotaka-api.vercel.app/", {
+    const res = await fetch("https://api.gemini.ai/v1/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: text })
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": "Bearer VOTRE_CLÉ_D'API_GEMINI" 
+      },
+      body: JSON.stringify({ 
+        model: "gemini-pro",
+        prompt: { text: text }
+      })
     });
     const data = await res.json();
-    const botReply = data.reply || data.message || JSON.stringify(data);
+    const botReply = data.replies[0].text || data.message || JSON.stringify(data);
     addMessage(botReply, "bot");
   } catch {
     addMessage("Erreur API", "bot");
@@ -124,7 +130,7 @@ async function restorePhoto(file) {
       });
       const data = await res.json();
       if (data.status === "success" && data.output_url) {
-        const restoredImageUrl = "data:image/png;base64," + data.image_base64;
+        const restoredImageUrl = "data:image/png;base64," + data.output_url;
         addMessage("Votre photo restaurée :", "bot");
         addMessage(restoredImageUrl, "bot", true);
       } else {
@@ -268,4 +274,4 @@ voiceButton.addEventListener('click', () => {
         recognition.start();
     }
 });
-  
+        
