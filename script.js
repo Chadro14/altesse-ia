@@ -4,13 +4,62 @@ const restoreFile = document.getElementById("restoreFile");
 const voiceButton = document.getElementById("voiceButton");
 
 let isListening = false;
-const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-recognition.lang = 'fr-FR';
+let recognition;
+let timer;
+let startTime;
 
-recognition.continuous = true;
-recognition.interimResults = false;
+if ("webkitSpeechRecognition" in window) {
+    recognition = new webkitSpeechRecognition();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
-// Message initial du bot avec le texte personnalisé
+    recognition.onstart = () => {
+        isListening = true;
+        voiceButton.textContent = "🔴 Stop";
+        startTime = Date.now();
+        timer = setInterval(() => {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            voiceButton.textContent = `🔴 Stop (${elapsedTime}s)`;
+        }, 1000);
+    };
+
+    recognition.onresult = (event) => {
+        let interim_transcript = '';
+        let final_transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                final_transcript += event.results[i][0].transcript;
+            } else {
+                interim_transcript += event.results[i][0].transcript;
+            }
+        }
+        input.value = final_transcript + interim_transcript;
+    };
+
+    recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        addMessage(`Erreur de reconnaissance vocale : ${event.error}`, "bot");
+        isListening = false;
+        voiceButton.textContent = "🎙️ Parler";
+        clearInterval(timer);
+    };
+
+    recognition.onend = () => {
+        isListening = false;
+        voiceButton.textContent = "🎙️ Parler";
+        clearInterval(timer);
+        if (input.value.trim() !== '') {
+            sendMessage();
+        }
+    };
+
+} else {
+    voiceButton.disabled = true;
+    voiceButton.textContent = "API non supportée";
+    addMessage("Votre navigateur ne supporte pas la reconnaissance vocale.", "bot");
+}
+
 const botNote = `
   Salut, je suis **Altesse AI**.
   Amélioré le 2 septembre 2025 par *son Altesse*.
@@ -40,12 +89,6 @@ function addMessage(content, type, isMedia = false, mediaType = 'image') {
   messages.scrollTop = messages.scrollHeight;
 }
 
-function speakMessage(text) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'fr-FR';
-    window.speechSynthesis.speak(utterance);
-}
-
 async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
@@ -71,16 +114,16 @@ async function restorePhoto(file) {
   reader.onloadend = async () => {
     const base64Image = reader.result.split(',')[1];
     try {
-      const res = await fetch("https://api.market/store/magicapi/ai-photo-restoration-colorization", {
+      const res = await fetch("https://api.deepai.org/api/photo-restoration", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": "VOTRE_CLÉ_D'API"
+          "api-key": "VOTRE_CLÉ_D'API_DEEP_AI"
         },
-        body: JSON.stringify({ image_base64: base64Image, mode: "colorization" })
+        body: JSON.stringify({ image_base64: base64Image })
       });
       const data = await res.json();
-      if (data.status === "success" && data.image_base64) {
+      if (data.status === "success" && data.output_url) {
         const restoredImageUrl = "data:image/png;base64," + data.image_base64;
         addMessage("Votre photo restaurée :", "bot");
         addMessage(restoredImageUrl, "bot", true);
@@ -107,7 +150,7 @@ async function generateImage() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": "VOTRE_CLÉ_D'API"
+                "x-api-key": "VOTRE_CLÉ_D'API_KIE"
             },
             body: JSON.stringify({ prompt: prompt, model: "midjourney" })
         });
@@ -136,7 +179,7 @@ async function generateVideo() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": "VOTRE_CLÉ_D'API"
+                "x-api-key": "VOTRE_CLÉ_D'API_KIE"
             },
             body: JSON.stringify({ prompt: prompt, model: "veo3" })
         });
@@ -152,6 +195,62 @@ async function generateVideo() {
     }
 }
 
+async function searchWeb() {
+    const query = input.value.trim();
+    if (!query) {
+        addMessage("Veuillez entrer une requête de recherche.", "bot");
+        return;
+    }
+    addMessage(`Recherche sur le web pour : "${query}"`, "user");
+    input.value = "";
+    try {
+        const res = await fetch("https://api.serpstack.com/search?access_key=VOTRE_CLÉ_D'API_DE_RECHERCHE&query=" + encodeURIComponent(query));
+        const data = await res.json();
+        if (data.search_results && data.search_results.length > 0) {
+            let results = "Voici les résultats de ma recherche :<br>";
+            data.search_results.slice(0, 3).forEach(result => {
+                results += `<br>• <a href="${result.url}" target="_blank">${result.title}</a><br>${result.snippet}<br>`;
+            });
+            addMessage(results, "bot");
+        } else {
+            addMessage("Aucun résultat trouvé pour cette requête.", "bot");
+        }
+    } catch (error) {
+        addMessage("Erreur lors de la recherche sur le web.", "bot");
+    }
+}
+
+async function executeCode() {
+    const code = input.value.trim();
+    if (!code) {
+        addMessage("Veuillez entrer le code à exécuter.", "bot");
+        return;
+    }
+    addMessage("Exécution du code...", "user");
+    input.value = "";
+    try {
+        const res = await fetch("https://api.paiza.io/runners/run", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                source_code: code,
+                language: "javascript",
+                api_key: "VOTRE_CLÉ_D'API_CODAGE"
+            })
+        });
+        const data = await res.json();
+        if (data.stdout) {
+            addMessage("Résultat du code :<br><pre>" + data.stdout + "</pre>", "bot");
+        } else if (data.stderr) {
+            addMessage("Erreur de codage :<br><pre>" + data.stderr + "</pre>", "bot");
+        } else {
+            addMessage("Impossible d'exécuter le code. " + (data.message || JSON.stringify(data)), "bot");
+        }
+    } catch (error) {
+        addMessage("Erreur de connexion à l'API de codage.", "bot");
+    }
+}
+
 input.addEventListener("keydown", e => {
   if (e.key === "Enter") sendMessage();
 });
@@ -163,38 +262,10 @@ restoreFile.addEventListener("change", (e) => {
 });
 
 voiceButton.addEventListener('click', () => {
-    if (!isListening) {
-        recognition.start();
-        isListening = true;
-        voiceButton.textContent = "🔴 Stop";
-        addMessage("Je vous écoute...", "bot");
-    } else {
+    if (isListening) {
         recognition.stop();
-        isListening = false;
-        voiceButton.textContent = "🎙️ Parler";
-        addMessage("Reconnaissance vocale arrêtée.", "bot");
+    } else {
+        recognition.start();
     }
 });
-
-recognition.onresult = (event) => {
-    const speech = event.results[event.results.length - 1][0].transcript;
-    input.value = speech;
-    recognition.stop();
-    isListening = false;
-    voiceButton.textContent = "🎙️ Parler";
-    sendMessage();
-};
-
-recognition.onerror = (event) => {
-    console.error("Speech recognition error:", event.error);
-    addMessage(`Erreur de reconnaissance vocale : ${event.error}`, "bot");
-    isListening = false;
-    voiceButton.textContent = "🎙️ Parler";
-};
-
-recognition.onend = () => {
-    if (isListening) {
-        recognition.start();
-    }
-};
-
+  
